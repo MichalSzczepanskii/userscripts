@@ -5,7 +5,7 @@ Tampermonkey userscripts, written in TypeScript and loaded from local files.
 ## Setup (once)
 
 1. `pnpm install`
-2. Chrome: `chrome://extensions` → Tampermonkey → Details → enable **Allow access to file URLs**.
+2. Chrome/Brave: `chrome://extensions` → Tampermonkey → Details → enable **Allow access to file URLs** and **Allow User Scripts**, then restart the browser. Without the restart the `file://` require loads empty and the script silently does nothing. The Externals tab shows 0 bytes for `file://` requires even when they work.
 3. `pnpm build`
 4. Drag `dist/<name>.stub.user.js` into the browser and click Install.
 
