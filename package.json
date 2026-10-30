@@ -1,0 +1,22 @@
+{
+  "name": "userscripts",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.0.8",
+  "scripts": {
+    "build": "node --disable-warning=ExperimentalWarning scripts/build.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "prettier": "^3.9.10",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-monkey": "^8.1.1",
+    "vitest": "^5.0.5"
+  }
+}
