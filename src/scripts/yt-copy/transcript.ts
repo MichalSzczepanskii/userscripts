@@ -59,7 +59,9 @@ export function currentVideoId(): string | null {
   return location.pathname === '/watch' ? new URLSearchParams(location.search).get('v') : null;
 }
 
-export async function loadVideo(videoId: string): Promise<{ video: VideoInfo; cues: Cue[] }> {
+export async function loadVideo(
+  videoId: string,
+): Promise<{ video: VideoInfo; cues: Cue[]; captionsAvailable: boolean }> {
   const player = (
     document.getElementById('movie_player') as { getPlayerResponse?(): PlayerResponse } | null
   )?.getPlayerResponse?.();
@@ -83,5 +85,6 @@ export async function loadVideo(videoId: string): Promise<{ video: VideoInfo; cu
       language: cues.length ? language : undefined,
     },
     cues,
+    captionsAvailable: !!track || !!web?.captions,
   };
 }

@@ -70,3 +70,11 @@ export function toMarkdown(video: VideoInfo, cues: Cue[], withTimestamps: boolea
 
   return `# ${video.title}\n\n${fields.join('\n')}\n\n## Transcript\n\n${transcript}\n`;
 }
+
+/** Toast shown after copying. Captions that exist but yield no cues mean the fetch is broken. */
+export function copyMessage(hasCues: boolean, captionsAvailable: boolean, withTimestamps: boolean): string {
+  if (hasCues) return withTimestamps ? 'Skopiowano (z czasem)' : 'Skopiowano';
+  return captionsAvailable
+    ? 'Napisy są, ale pobieranie nie działa — zaktualizuj skrypt'
+    : 'Brak transkryptu, skopiowano tylko nagłówek';
+}

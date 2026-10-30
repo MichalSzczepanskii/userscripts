@@ -1,6 +1,6 @@
 import { GM_registerMenuCommand, GM_setClipboard } from '$';
 import { toast } from '../../lib/toast';
-import { toMarkdown } from './format';
+import { copyMessage, toMarkdown } from './format';
 import { currentVideoId, loadVideo } from './transcript';
 
 async function copy(withTimestamps: boolean) {
@@ -8,15 +8,9 @@ async function copy(withTimestamps: boolean) {
   if (!videoId) return toast('To nie jest strona filmu');
   toast('Pobieram transkrypt…', true);
   try {
-    const { video, cues } = await loadVideo(videoId);
+    const { video, cues, captionsAvailable } = await loadVideo(videoId);
     GM_setClipboard(toMarkdown(video, cues, withTimestamps), 'text');
-    toast(
-      !cues.length
-        ? 'Brak transkryptu, skopiowano tylko nagłówek'
-        : withTimestamps
-          ? 'Skopiowano (z czasem)'
-          : 'Skopiowano',
-    );
+    toast(copyMessage(cues.length > 0, captionsAvailable, withTimestamps));
   } catch (error) {
     toast(`Błąd: ${error instanceof Error ? error.message : error}`);
   }

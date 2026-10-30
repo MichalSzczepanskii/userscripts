@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatTime, languageLabel, parseJson3, pickDefaultTrack, toMarkdown } from './format';
+import { copyMessage, formatTime, languageLabel, parseJson3, pickDefaultTrack, toMarkdown } from './format';
 
 describe('formatTime', () => {
   it('formats minutes and hours', () => {
@@ -75,5 +75,21 @@ describe('toMarkdown', () => {
     expect(toMarkdown({ id: 'x', title: 'T' }, [], false)).toBe(
       '# T\n\n- URL: https://www.youtube.com/watch?v=x\n\n## Transcript\n\n_No transcript available._\n',
     );
+  });
+});
+
+describe('copyMessage', () => {
+  it('confirms a copied transcript', () => {
+    expect(copyMessage(true, true, false)).toBe('Skopiowano');
+    expect(copyMessage(true, true, true)).toBe('Skopiowano (z czasem)');
+  });
+
+  it('tells a video without captions from a broken fetch', () => {
+    for (const withTimestamps of [false, true]) {
+      expect(copyMessage(false, false, withTimestamps)).toBe('Brak transkryptu, skopiowano tylko nagłówek');
+      expect(copyMessage(false, true, withTimestamps)).toBe(
+        'Napisy są, ale pobieranie nie działa — zaktualizuj skrypt',
+      );
+    }
   });
 });
