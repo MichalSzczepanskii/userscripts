@@ -2,3 +2,8 @@ node_modules
 dist
 .DS_Store
 .claude/settings.local.json
+
+# Override ~/.gitignore_global (work repos hide Claude files; this personal repo keeps them)
+!CLAUDE.md
+!.claude
+!/docs/agents/*
