@@ -32,3 +32,17 @@ When the user says a script is installed but does nothing:
 
 - First suspect the browser restart. After enabling **Allow access to file URLs** in the extension details, Chrome/Brave must be restarted. Until then the `file://` require returns `200 OK` with an empty body, and nothing logs an error.
 - The Tampermonkey Externals tab always shows 0 bytes for `file://` requires, working or not. Judge by the script's behaviour on the page.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `MichalSzczepanskii/userscripts`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` + `docs/adr/`, created lazily. See `docs/agents/domain.md`.
