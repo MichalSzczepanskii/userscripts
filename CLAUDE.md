@@ -15,3 +15,20 @@ Personal repo: shortcut comments allowed.
 - GM APIs come from `import { ... } from '$'`, and every one used must be listed in `grant` in `meta.ts`. The stub copies the header, so a new `@grant` or `@match` means reinstalling the stub.
 - Keep page-independent logic (parsing, formatting) in pure modules with a `*.test.ts` next to them. Page integration is checked by hand.
 - Checks: `pnpm test`, `pnpm typecheck`, `pnpm format:check`, `pnpm build`.
+
+## New script
+
+1. Copy `src/scripts/yt-copy/` to `src/scripts/<name>/` as the template; keep only the files the new script uses.
+2. Rewrite `meta.ts`: unique `name`, `match` for the target site, `grant` listing exactly the GM APIs imported from `$`.
+3. Write `main.ts`, with pure logic in its own module and a `*.test.ts` beside it.
+4. Run all checks.
+5. Hand the user the install URL: `file:///Users/work/Dev/custom/userscripts/dist/<name>.stub.user.js`.
+
+Done when every check passes and `dist/<name>.stub.user.js` exists.
+
+## Install gotchas
+
+When the user says a script is installed but does nothing:
+
+- First suspect the browser restart. After enabling **Allow access to file URLs** in the extension details, Chrome/Brave must be restarted. Until then the `file://` require returns `200 OK` with an empty body, and nothing logs an error.
+- The Tampermonkey Externals tab always shows 0 bytes for `file://` requires, working or not. Judge by the script's behaviour on the page.
