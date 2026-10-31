@@ -54,7 +54,14 @@ export function formatTime(ms: number): string {
   return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
 
-export function toMarkdown(video: VideoInfo, cues: Cue[], withTimestamps: boolean): string {
+/** `level` is the heading level of the title; a playlist nests videos at level 2. */
+export function toMarkdown(
+  video: VideoInfo,
+  cues: Cue[],
+  withTimestamps: boolean,
+  level = 1,
+  emptyNote = 'No transcript available.',
+): string {
   const fields = [
     `- URL: https://www.youtube.com/watch?v=${video.id}`,
     video.channel && `- Channel: ${video.channel}`,
@@ -63,12 +70,13 @@ export function toMarkdown(video: VideoInfo, cues: Cue[], withTimestamps: boolea
   ].filter(Boolean);
 
   const transcript = !cues.length
-    ? '_No transcript available._'
+    ? `_${emptyNote}_`
     : withTimestamps
       ? cues.map((cue) => `[${formatTime(cue.startMs)}] ${cue.text}`).join('\n')
       : cues.map((cue) => cue.text).join(' ');
 
-  return `# ${video.title}\n\n${fields.join('\n')}\n\n## Transcript\n\n${transcript}\n`;
+  const h = '#'.repeat(level);
+  return `${h} ${video.title}\n\n${fields.join('\n')}\n\n${h}# Transcript\n\n${transcript}\n`;
 }
 
 /** Toast shown after copying. Captions that exist but yield no cues mean the fetch is broken. */

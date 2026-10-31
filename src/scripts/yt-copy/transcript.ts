@@ -1,5 +1,6 @@
 import { unsafeWindow } from '$';
 import { languageLabel, parseJson3, pickDefaultTrack, type CaptionTracklist, type Cue, type VideoInfo } from './format';
+import { parsePlaylistPage, type BrowseResponse, type PlaylistVideo } from './playlist';
 
 interface PlayerResponse {
   videoDetails?: { videoId?: string; title?: string; author?: string };
@@ -8,7 +9,7 @@ interface PlayerResponse {
 }
 
 interface YouTubeWindow {
-  ytcfg?: { get(key: string): string | undefined };
+  ytcfg?: { get(key: string): unknown };
 }
 
 // The IOS client returns caption URLs that work without a PO token; the web client's do not.
@@ -55,12 +56,52 @@ async function fetchFromPlayerRequest(): Promise<{ cues: Cue[]; language?: strin
   return { cues: await fetchCues(url), language: languageLabel(params.get('lang') ?? '?', params.get('kind')) };
 }
 
+// Private playlists (WL, LL, your own) need the SAPISIDHASH header the web client sends with its cookies.
+async function authHeaders(): Promise<Record<string, string>> {
+  const sapisid = document.cookie.match(/(?:^|; )(?:SAPISID|__Secure-3PAPISID)=([^;]+)/)?.[1];
+  if (!sapisid) return {};
+  const time = Math.floor(Date.now() / 1000);
+  const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(`${time} ${sapisid} ${location.origin}`));
+  const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  return { Authorization: `SAPISIDHASH ${time}_${hash}`, 'X-Origin': location.origin, 'X-Goog-AuthUser': '0' };
+}
+
+async function browse(body: object): Promise<BrowseResponse> {
+  const ytcfg = (unsafeWindow as YouTubeWindow).ytcfg;
+  const response = await fetch(`/youtubei/v1/browse?key=${ytcfg?.get('INNERTUBE_API_KEY') ?? ''}&prettyPrint=false`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ context: ytcfg?.get('INNERTUBE_CONTEXT'), ...body }),
+  });
+  if (!response.ok) throw new Error(`browse ${response.status}`);
+  return response.json();
+}
+
 export function currentVideoId(): string | null {
   return location.pathname === '/watch' ? new URLSearchParams(location.search).get('v') : null;
 }
 
+export function currentPlaylistId(): string | null {
+  return ['/watch', '/playlist'].includes(location.pathname) ? new URLSearchParams(location.search).get('list') : null;
+}
+
+/** Every video of the playlist, following continuations page by page. */
+export async function loadPlaylist(
+  listId: string,
+): Promise<{ id: string; title: string; channel?: string; videos: PlaylistVideo[] }> {
+  let page = parsePlaylistPage(await browse({ browseId: `VL${listId}` }));
+  const { title = listId, channel } = page;
+  const videos = [...page.videos];
+  while (page.token && page.videos.length) {
+    page = parsePlaylistPage(await browse({ continuation: page.token }));
+    videos.push(...page.videos);
+  }
+  return { id: listId, title, channel, videos };
+}
+
 export async function loadVideo(
   videoId: string,
+  fallbackTitle = document.title.replace(/ - YouTube$/, ''),
 ): Promise<{ video: VideoInfo; cues: Cue[]; captionsAvailable: boolean }> {
   const player = (
     document.getElementById('movie_player') as { getPlayerResponse?(): PlayerResponse } | null
@@ -79,7 +120,7 @@ export async function loadVideo(
   return {
     video: {
       id: videoId,
-      title: details?.title ?? document.title.replace(/ - YouTube$/, ''),
+      title: details?.title ?? fallbackTitle,
       channel: details?.author,
       published: web?.microformat?.playerMicroformatRenderer?.publishDate,
       language: cues.length ? language : undefined,

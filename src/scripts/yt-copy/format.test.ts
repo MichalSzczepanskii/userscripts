@@ -75,6 +75,9 @@ describe('toMarkdown', () => {
     expect(toMarkdown({ id: 'x', title: 'T' }, [], false)).toBe(
       '# T\n\n- URL: https://www.youtube.com/watch?v=x\n\n## Transcript\n\n_No transcript available._\n',
     );
+    expect(toMarkdown({ id: 'x', title: 'T' }, [], false, 2, 'Transcript fetch failed.')).toContain(
+      '### Transcript\n\n_Transcript fetch failed._\n',
+    );
   });
 });
 
