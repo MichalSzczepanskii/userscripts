@@ -34,7 +34,10 @@ function menuItem(list: Element): HTMLElement {
   if (native) {
     const item = native.cloneNode(true) as HTMLElement;
     item.querySelector('[role=text]')!.textContent = LABEL;
-    item.querySelector('svg')?.replaceWith(copyIcon());
+    // YouTube adds the hover class and loads the icon's SVG from JS, so the clone may have neither.
+    item.querySelector('.ytListItemViewModelHovered')?.classList.remove('ytListItemViewModelHovered');
+    item.querySelector('.ytListItemViewModelTappable')?.classList.add('ytListItemViewModelTappableHover');
+    item.querySelector('[role=img]')?.replaceChildren(copyIcon());
     return item;
   }
   const item = document.createElement('div');
