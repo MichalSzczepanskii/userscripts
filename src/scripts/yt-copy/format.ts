@@ -86,3 +86,10 @@ export function copyMessage(hasCues: boolean, captionsAvailable: boolean, withTi
     ? 'Napisy są, ale pobieranie nie działa — zaktualizuj skrypt'
     : 'Brak transkryptu, skopiowano tylko nagłówek';
 }
+
+/** Video ID from a tile's `/watch?v=` or `/shorts/` link. */
+export function videoIdFromHref(href: string): string | null {
+  const url = new URL(href, 'https://www.youtube.com');
+  if (url.pathname === '/watch') return url.searchParams.get('v');
+  return url.pathname.match(/^\/shorts\/([\w-]+)/)?.[1] ?? null;
+}

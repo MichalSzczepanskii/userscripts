@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { copyMessage, formatTime, languageLabel, parseJson3, pickDefaultTrack, toMarkdown } from './format';
+import {
+  copyMessage,
+  formatTime,
+  languageLabel,
+  parseJson3,
+  pickDefaultTrack,
+  toMarkdown,
+  videoIdFromHref,
+} from './format';
 
 describe('formatTime', () => {
   it('formats minutes and hours', () => {
@@ -94,5 +102,18 @@ describe('copyMessage', () => {
         'Napisy są, ale pobieranie nie działa — zaktualizuj skrypt',
       );
     }
+  });
+});
+
+describe('videoIdFromHref', () => {
+  it('reads watch and shorts links, relative or absolute', () => {
+    expect(videoIdFromHref('/watch?v=72YoraTjNI0&list=RD72YoraTjNI0&start_radio=1')).toBe('72YoraTjNI0');
+    expect(videoIdFromHref('https://www.youtube.com/watch?v=a-b_c')).toBe('a-b_c');
+    expect(videoIdFromHref('/shorts/oZghh_F4KZE')).toBe('oZghh_F4KZE');
+  });
+
+  it('returns null for other links', () => {
+    expect(videoIdFromHref('/@channel')).toBeNull();
+    expect(videoIdFromHref('/playlist?list=PLx')).toBeNull();
   });
 });

@@ -1,15 +1,15 @@
 import { GM_registerMenuCommand, GM_setClipboard } from '$';
 import { toast } from '../../lib/toast';
 import { copyMessage, toMarkdown } from './format';
+import { addTileMenuItem } from './menu';
 import { playlistFilename, playlistMarkdown, playlistMessage } from './playlist';
 import { currentPlaylistId, currentVideoId, loadPlaylist, loadVideo } from './transcript';
 
-async function copy(withTimestamps: boolean) {
-  const videoId = currentVideoId();
+async function copy(withTimestamps: boolean, videoId = currentVideoId(), title?: string) {
   if (!videoId) return toast('To nie jest strona filmu');
   toast('Pobieram transkrypt…', true);
   try {
-    const { video, cues, captionsAvailable } = await loadVideo(videoId);
+    const { video, cues, captionsAvailable } = await loadVideo(videoId, title);
     GM_setClipboard(toMarkdown(video, cues, withTimestamps), 'text');
     toast(copyMessage(cues.length > 0, captionsAvailable, withTimestamps));
   } catch (error) {
@@ -57,6 +57,8 @@ GM_registerMenuCommand('Kopiuj link + transkrypt', () => copy(false));
 GM_registerMenuCommand('Kopiuj link + transkrypt (z czasem)', () => copy(true));
 GM_registerMenuCommand('Pobierz transkrypt playlisty (.md)', () => downloadPlaylist(false));
 GM_registerMenuCommand('Pobierz transkrypt playlisty (.md, z czasem)', () => downloadPlaylist(true));
+
+addTileMenuItem((videoId, title, withTimestamps) => copy(withTimestamps, videoId, title));
 
 window.addEventListener(
   'keydown',
